@@ -45,6 +45,14 @@ sap.ui.define([
 					}),
 					new Text({
 						text: "{MainModel>Reorder_Qty}"
+					}),
+					new Text({
+						text: "{= ${MainModel>Qty} * ${MainModel>Price}}"
+					}),
+					new sap.m.ObjectStatus({
+						text: "{= ${MainModel>DELIMITED} ? 'Delimited' : 'Available'}",
+						icon: "{= ${MainModel>DELIMITED} ? 'sap-icon://error' : 'sap-icon://sys-enter-2'}",
+						state: "{= ${MainModel>DELIMITED} ? 'Error' : 'Success'}"
 					})
 				]
 			});
@@ -52,8 +60,8 @@ sap.ui.define([
 			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
 			this.oEditableTemplate = new ColumnListItem({
 				cells: [
-					new sap.m.ComboBox({
-						items: {
+					new sap.m.Input({
+						suggestionItems: {
 							path: "MainModel>/InventorySet",
 							template: new sap.ui.core.Item({
 								text: '{MainModel>Items}',
@@ -61,8 +69,9 @@ sap.ui.define([
 							}),
 							templateShareable: true
 						},
-						selectedKey: "{MainModel>ID}",
-						value:"{MainModel>Items}"
+						value: "{MainModel>Items}",
+						editable: "{= !${MainModel>ID}}",
+						liveChange: this.onItemSelected.bind(this)
 					}),
 					new Input({
 						value: "{MainModel>Price}"
@@ -73,9 +82,13 @@ sap.ui.define([
 					new Input({
 						value: "{MainModel>Reorder_Qty}"
 					}),
+					new Input({
+						value: "{= ${MainModel>Qty} * ${MainModel>Price}}",
+						editable: false
+					}),
 					new CheckBox({
 						text: "",
-						valueState: "{= ${MainModel>DELIMITED} ? 'Error' : 'Information' }",
+						valueState: "{= ${MainModel>DELIMITED} ? 'Error' : 'Success' }",
 						selected: "{MainModel>DELIMITED}"
 					})
 				]
@@ -84,9 +97,46 @@ sap.ui.define([
 		onDelimitedChange: function () {
 			this.onFilterItems();
 		},
+		onItemSelected: function (oEvent) {
+			var sItemName = oEvent.getParameter("newValue");
+			var sCheckArray = this.getOwnerComponent().getModel("MainModel").getProperty("/InventorySet");
+			// var oTable = this.getView().byId("Inventory_Table");
+			// var oColumn =oTable.getColumns()[0].Items;
+			var oCombobox = oEvent.getSource();
+			for (var i = 0; i < sCheckArray.length; i++) {
+				if (sCheckArray[i].Items === sItemName) {
+					oCombobox.setValueState("Error");
+					oCombobox.setValueStateText("Item already exist");
+					this.validateSaveEnabled();
+					return;
+				}
+			}
+			oCombobox.setValueState("None");
+			oCombobox.setValueStateText();
+			this.validateSaveEnabled();
+		},
+
+		validateSaveEnabled: function () {
+			var aItems = this.byId("Inventory_Table").getItems();
+			var aInputControls = [];
+			for (var i = 0; i < aItems.length; i++) {
+				aInputControls.push(aItems[i].getCells()[0])
+			}
+			for (var m = 0; m < aInputControls.length; m++) {
+				if (aInputControls[m].getValueState() === 'Error') {
+					this.getOwnerComponent().getModel("MainModel").setProperty("/enableInventorySave", false);
+					return;
+				}
+			}
+			this.getOwnerComponent().getModel("MainModel").setProperty("/enableInventorySave", true);
+		},
+
 		rebindTable: function (oTemplate, sKeyboardMode) {
-			var oDefaultFilter = [new Filter("DELIMITED", FilterOperator.EQ, this.getOwnerComponent().getModel("MainModel").getProperty(
-				"/bShowInventoryDelimited"))];
+			var oDefaultFilter = [];
+			var bDelimited = this.getOwnerComponent().getModel("MainModel").getProperty("/bShowInventoryDelimited");
+			if (!bDelimited) {
+				oDefaultFilter.push(new Filter("DELIMITED", FilterOperator.EQ, false));
+			}
 			this.oTable.bindItems({
 				path: "MainModel>/InventorySet",
 				filters: oDefaultFilter,
@@ -94,37 +144,6 @@ sap.ui.define([
 				templateShareable: true,
 				key: "ID"
 			});
-		},
-
-		createColumnConfig: function () {
-			var aCols = [];
-
-			aCols.push({
-				label: 'Items',
-				property: 'Items',
-				type: EdmType.String,
-				template: '{0}, {1}'
-			});
-
-			aCols.push({
-				label: 'Price',
-				type: EdmType.String,
-				property: 'Price',
-				scale: 0
-			});
-
-			aCols.push({
-				label: 'Quantity',
-				property: 'Qty',
-				type: EdmType.Number
-			});
-
-			aCols.push({
-				label: 'Reorder Quantity',
-				property: 'Reorder_Qty',
-				type: EdmType.Number
-			});
-			return aCols;
 		},
 
 		updateTableData: function (oData) {
@@ -138,6 +157,7 @@ sap.ui.define([
 					console.log("Update successful");
 					sap.m.MessageToast.show("Update Successful!");
 					that.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", false);
+					that._onProductMatched();
 					that.rebindTable(that.oReadOnlyTemplate, "Navigation");
 				},
 				error: function (oError) {
@@ -155,33 +175,15 @@ sap.ui.define([
 			that.getView().getModel("newModel").setProperty("/delete", true);
 			that.getView().getModel("newModel").setProperty("/editable", true);
 			this.rebindTable(this.oEditableTemplate, "Edit");
-			// 	this.rebindTable(this.oEditableTemplate, "Edit");
-			// var aData = oModel.getProperty("/InventorySet");
-			// var oEntry = {
-			// 	"ID": "",
-			// 	"Items": "",
-			// 	"Price": 0,
-			// 	"Qty": 0,
-			// 	"Reorder_Qty": 0
-			// };
-			// aData.push(oEntry);
-			// oModel.setProperty("/InventorySet", aData);
-			// oModel.refresh(true);
-			// oTable.getItems()[oTable.getItems().length - 1].getCells()[0].focus()
 
-			// var oUpdatedData = {
-			//     ID: "ID",
-			//     Items: "Items",
-			//     Price: "Price",
-			//     Qty: "Qty",
-			//     Reorder_Qty: "Reorder_Qty"
-			//   };
+			var oTable = this.getView().byId("Inventory_Table");
+			var oItems = oTable.getItems();
+			for (var i = 0; i < oItems.length; i++) {
+				oItems[i].getCells()[4].setEnabled(false);
 
-			//this.updateTableData(oUpdatedData);
+			}
 
 		},
-
-	
 
 		onSave: function (oEvent) {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
@@ -190,36 +192,9 @@ sap.ui.define([
 			var aData = oModel.getProperty(sBindingPath);
 			this.updateTableData(aData);
 			oModel.setProperty("/bEditMode", false);
-			//this.getView().getModel("newModel").setProperty("/editable", false);
 			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
-			// that.getView().getModel("newModel").setProperty("/add", false);
-			//         that.getView().getModel("newModel").setProperty("/delete", false);
-			//         that.getView().getModel("newModel").setProperty("/editable", false);
-			// that.rebindTable(that.oReadOnlyTemplate, true);
 
-			//         that.rebindTable(that.oReadOnlyTemplate, "Navigation");
 		},
-		// onChange: function(oEvent) {
-		// 	var that = this;
-		// 	var enteredText = oEvent.getParameters("value").value;
-		// 	this.recordexists = undefined;
-		// 	// var index=undefined;
-		// 	var sData = this.getView().getModel("MainModel").getData().InventorySet;//get the moedl data
-		// 	var spath = parseInt(oEvent.getSource().getBindingContext("MainModel").getPath().split("/")[2]);//get the index of enter data row
-
-		// 	var index = sData.findIndex(function(item, sindex) {//findIndex is a method used to validate if same value found it returns index position othervise it returns -1
-		// 		return item.Items === enteredText && sindex !== spath;
-		// 	});
-		// 	if (index > -1) {
-		// 		this.recordexists = index;
-		// 		that.getView().getModel("newModel").setProperty("/valueState", "Error");//set value state to error
-		// 		MessageToast.show("entered sales order is alreay exists");
-
-		// 		return;
-		// 	}
-		// 	that.getView().getModel("newModel").setProperty("/valueState", "None");
-
-		// },
 
 		onDelete: function () {
 			var that = this;
@@ -229,11 +204,11 @@ sap.ui.define([
 			oTable.setMode("MultiSelect");
 			var aSelectedItems = oTable.getSelectedItems();
 			if (aSelectedItems.length === 0) {
-				MessageToast.show("Please select at least one item to delete.");
+				MessageToast.show("Please select at least one item to delimit.");
 				return;
 			}
 
-			MessageBox.confirm("Do you really want to delete the selected item(s)?", {
+			MessageBox.confirm("Do you really want to delimit the selected item(s)?", {
 				title: "Confirm Delete",
 				onClose: function (oAction) {
 					if (oAction === MessageBox.Action.OK) {
@@ -258,10 +233,10 @@ sap.ui.define([
 								url: "https://your-odata-service-url/InventorySet(" + sID + ")",
 								type: "DELETE",
 								success: function (data) {
-									console.log("Item deleted successfully:", data);
+									console.log("Item delimited successfully:", data);
 								},
 								error: function (error) {
-									console.error("Error deleting item:", error);
+									console.error("Error in delimiting item:", error);
 								}
 							});
 						});
@@ -276,7 +251,47 @@ sap.ui.define([
 			});
 
 		},
-		// 
+		
+		createColumnConfig: function () {
+			var aCols = [];
+
+			aCols.push({
+				label: 'Items',
+				property: 'Items',
+				type: EdmType.String,
+				template: '{0}, {1}'
+			});
+
+			aCols.push({
+				label: 'Price(₹)',
+				type: EdmType.String,
+				property: 'Price',
+				scale: 0
+			});
+
+			aCols.push({
+				label: 'Quantity',
+				property: 'Qty',
+				type: EdmType.Number
+			});
+
+			aCols.push({
+				label: 'Safety Stock (Qty)',
+				property: 'Reorder_Qty',
+				type: EdmType.Number
+			});
+			
+			aCols.push({
+				label: 'Total Value(₹)',
+				property: ['Qty','Price'],
+				type: EdmType.Number,
+				template:  '{0}*{1}'
+				
+			});
+			return aCols;
+		},
+
+		
 		onExcelPress: function () {
 			var aCols, oRowBinding, oSettings, oSheet, oTable;
 
@@ -286,6 +301,7 @@ sap.ui.define([
 
 			oTable = this._oTable;
 			oRowBinding = oTable.getBinding('items');
+			
 			aCols = this.createColumnConfig();
 
 			oSettings = {
@@ -294,7 +310,7 @@ sap.ui.define([
 					hierarchyLevel: 'Level'
 				},
 				dataSource: oRowBinding,
-				fileName: 'Office inventory.xlsx',
+				fileName: 'Office Inventory.xlsx',
 				worker: false // We need to disable worker because we are using a MockServer as OData Service
 			};
 
@@ -318,8 +334,10 @@ sap.ui.define([
 					}
 				}
 			}
-			aFilters.push(new Filter("DELIMITED", FilterOperator.EQ, this.getOwnerComponent().getModel("MainModel").getProperty(
-				"/bShowInventoryDelimited")));
+			var bDelimited = this.getOwnerComponent().getModel("MainModel").getProperty("/bShowInventoryDelimited");
+			if (!bDelimited) {
+				aFilters.push(new Filter("DELIMITED", FilterOperator.EQ, false));
+			}
 			this.getView().byId("Inventory_Table").getBinding("items").filter(aFilters);
 		},
 
@@ -357,6 +375,26 @@ sap.ui.define([
 					console.error("Ajax error:", error);
 				}
 			});
+			var filterCriteria = "DELIMITED=false"
+			jQuery.ajax({
+				url: `https://demo-rudrani.glitch.me/grid?filterCriteria=${encodeURIComponent(filterCriteria)}`,
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					if (data.success) {
+						var oData = oModel.getData();
+						oData.GridSet = data.data[0];
+						oModel.setData(oData);
+						console.log("Data fetched successfully:", data.data);
+						// Process the fetched data as needed
+					} else {
+						console.error("Error:", data.error);
+					}
+				},
+				error: function (error) {
+					console.error("Ajax error:", error);
+				}
+			});
 		},
 
 		onEditToggleButtonPress: function () {
@@ -372,6 +410,7 @@ sap.ui.define([
 		},
 		onAdd: function () {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/enableInventorySave", false);
 			var oTable = this.getView().byId("Inventory_Table");
 			var sBindingPath = oTable.getBinding("items").getPath();
 			this.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", true)
@@ -391,41 +430,16 @@ sap.ui.define([
 			aData.push(oEntry);
 			oModel.setProperty("/InventorySet", aData);
 			oModel.refresh(true);
-			oTable.getItems()[oTable.getItems().length - 1].getCells()[0].focus()
+			oTable.getItems()[oTable.getItems().length - 1].getCells()[0].focus();
+
+			//var oItems = oTable.getItems();
+			// for (var i = 0; i < oItems.length; i++) {
+			// 	oItems[i].getCells()[4].setEnabled(false);
+
+			// }
+
 		},
 
-		onCancelxx: function () {
-			var that = this;
-
-			MessageBox.confirm("Do you really want to cancel the edits and navigate away?", {
-				title: "Confirm Cancel",
-				onClose: function (oAction) {
-					if (oAction === MessageBox.Action.OK) {
-						// Reset UI to display read-only data
-						that.getView().getModel("newModel").setProperty("/add", false);
-						that.getView().getModel("newModel").setProperty("/delete", false);
-						that.getView().getModel("newModel").setProperty("/editable", false);
-						that.rebindTable(that.oReadOnlyTemplate, "Navigation");
-
-						// Refresh the table to discard the edits
-						// that.rebindTable(that.oReadOnlyTemplate, "Navigation");
-
-						// Navigate away from the current page
-						var oHistory = History.getInstance();
-						var sPreviousHash = oHistory.getPreviousHash();
-
-						if (sPreviousHash !== undefined) {
-							window.history.go(-1);
-						} else {
-							var oRouter = sap.ui.core.UIComponent.getRouterFor(that);
-							oRouter.navTo("Routemaster", true);
-						}
-
-						MessageToast.show("Edits canceled. Navigated away from the page.");
-					}
-				}
-			});
-		},
 		onCancel: function () {
 			var that = this;
 			var oModel = this.getView().getModel("MainModel");
@@ -454,18 +468,51 @@ sap.ui.define([
 				}
 			});
 		},
-		
-			onNavPress1: function () {
+
+		// 	onCancel: function () {
+		// 	var that = this;
+		// 	var oModel = this.getView().getModel("MainModel");
+
+		// 	MessageBox.confirm("Do you really want to cancel the edits?", {
+		// 		title: "Confirm Cancel",
+		// 		onClose: function (oAction) {
+		// 			if (oAction === MessageBox.Action.OK) {
+		// 				// Check if there's a new record being added
+		// 				var aData = oModel.getProperty("/InventorySet");
+		// 				if (aData.length > 0) {
+		// 					for (var i = aData.length - 1; i >= 0; i--) {
+		// 						var oItem = aData[i];
+		// 						if (oItem && !oItem.ID) {
+		// 							// Remove the new record from the model
+		// 							aData.splice(i, 1);
+		// 						}
+		// 					}
+		// 					oModel.setProperty("/InventorySet", aData);
+		// 				}
+		// 				that.rebindTable(that.oReadOnlyTemplate, "Navigation");
+		// 				oModel.setProperty("/bEditMode", false);
+		// 				MessageToast.show("Edit canceled");
+		// 			}
+
+		// 		}
+		// 	});
+		// },
+
+		onNavPress1: function () {
 			var oHistory = History.getInstance();
 			var sPreviousHash = oHistory.getPreviousHash();
+			console.log("Previous hash:", sPreviousHash);
 
-			if (sPreviousHash !== undefined) {
+			// Retrieve previous hash from local storage
+			var storedPreviousHash = localStorage.getItem("previousHash");
+
+			if (storedPreviousHash !== undefined && storedPreviousHash !== null && storedPreviousHash !== "") {
 				window.history.go(-1);
 			} else {
 				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 				oRouter.navTo("Routemaster", true);
 			}
-		}
+		},
 
 	});
 });
