@@ -35,7 +35,7 @@ sap.ui.define([
 			this.oReadOnlyTemplate = new ColumnListItem({
 				cells: [
 					new Text({
-						text: "{MainModel>ID}"
+						text: "{MainModel>EmpCode}"
 					}),
 					new Text({
 						text: "{MainModel>name}"
@@ -52,9 +52,9 @@ sap.ui.define([
 			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
 			this.oEditableTemplate = new ColumnListItem({
 				cells: [
-				
+
 					new Input({
-						value: "{MainModel>ID}"
+						value: "{MainModel>EmpCode}"
 					}),
 					new Input({
 						value: "{MainModel>name}"
@@ -62,7 +62,7 @@ sap.ui.define([
 					new Input({
 						value: "{MainModel>address}"
 					}),
-						new Input({
+					new Input({
 						value: "{MainModel>phoneNo}"
 					})
 					//for future version
@@ -91,13 +91,56 @@ sap.ui.define([
 			});
 		},
 
-		createColumnConfig: function () {
+	
+		updateTableData: function (oData) {
+			var that = this;
+			$.ajax({
+				url: "https://demo-rudrani.glitch.me/employee",
+				type: "PUT",
+				contentType: "application/json",
+				data: JSON.stringify(oData),
+				success: function () {
+					console.log("Update successful");
+					sap.m.MessageToast.show("Update Successful!");
+					that.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", false);
+					that._onProductMatched();
+					that.rebindTable(that.oReadOnlyTemplate, "Navigation");
+				},
+				error: function (oError) {
+					console.error("Update failed", oError);
+				}
+			});
+		},
+
+		onEdit: function (oEvent) {
+			this.aProductCollection = deepExtend([], this.oModel.getProperty("/Employees"));
+			this.getView().byId("Emp_Table").setMode("None");
+			var that = this;
+			this.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", true);
+			that.getView().getModel("newModel").setProperty("/add", true);
+			that.getView().getModel("newModel").setProperty("/delete", true);
+			that.getView().getModel("newModel").setProperty("/editable", true);
+			this.rebindTable(this.oEditableTemplate, "Edit");
+		},
+
+		onSave: function (oEvent) {
+			var oModel = this.getOwnerComponent().getModel("MainModel");
+			var oTable = this.getView().byId("Emp_Table");
+			var sBindingPath = oTable.getBinding("items").getPath();
+			var aData = oModel.getProperty(sBindingPath);
+			this.updateTableData(aData);
+			oModel.setProperty("/bEditMode", false);
+			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
+
+		},
+		
+			createColumnConfig: function () {
 			var aCols = [];
 
 			aCols.push({
-				label: 'ID',
-				property: 'ID',
-				type: EdmType.Number,
+				label: 'Employee ID',
+				property: 'EmpCode',
+				type: EdmType.String,
 				template: '{0}, {1}'
 			});
 
@@ -122,155 +165,7 @@ sap.ui.define([
 			return aCols;
 		},
 
-		updateTableData: function (oData) {
-			var that = this;
-			$.ajax({
-				url: "https://demo-rudrani.glitch.me/employee",
-				type: "PUT",
-				contentType: "application/json",
-				data: JSON.stringify(oData),
-				success: function () {
-					console.log("Update successful");
-					sap.m.MessageToast.show("Update Successful!");
-					that.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", false);
-					that.rebindTable(that.oReadOnlyTemplate, "Navigation");
-				},
-				error: function (oError) {
-					console.error("Update failed", oError);
-				}
-			});
-		},
 
-		onEdit: function (oEvent) {
-			this.aProductCollection = deepExtend([], this.oModel.getProperty("/Employees"));
-			this.getView().byId("Emp_Table").setMode("None");
-			var that = this;
-			this.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", true);
-			that.getView().getModel("newModel").setProperty("/add", true);
-			that.getView().getModel("newModel").setProperty("/delete", true);
-			that.getView().getModel("newModel").setProperty("/editable", true);
-			this.rebindTable(this.oEditableTemplate, "Edit");
-			// 	this.rebindTable(this.oEditableTemplate, "Edit");
-			// var aData = oModel.getProperty("/employee");
-			// var oEntry = {
-			// 	"ID": "",
-			// 	"Items": "",
-			// 	"Price": 0,
-			// 	"Qty": 0,
-			// 	"Reorder_Qty": 0
-			// };
-			// aData.push(oEntry);
-			// oModel.setProperty("/employee", aData);
-			// oModel.refresh(true);
-			// oTable.getItems()[oTable.getItems().length - 1].getCells()[0].focus()
-
-			// var oUpdatedData = {
-			//     ID: "ID",
-			//     Items: "Items",
-			//     Price: "Price",
-			//     Qty: "Qty",
-			//     Reorder_Qty: "Reorder_Qty"
-			//   };
-
-			//this.updateTableData(oUpdatedData);
-
-		},
-
-		
-		onSave: function (oEvent) {
-			var oModel = this.getOwnerComponent().getModel("MainModel");
-			var oTable = this.getView().byId("Emp_Table");
-			var sBindingPath = oTable.getBinding("items").getPath();
-			var aData = oModel.getProperty(sBindingPath);
-			this.updateTableData(aData);
-			oModel.setProperty("/bEditMode", false);
-			//this.getView().getModel("newModel").setProperty("/editable", false);
-			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
-			// that.getView().getModel("newModel").setProperty("/add", false);
-			//         that.getView().getModel("newModel").setProperty("/delete", false);
-			//         that.getView().getModel("newModel").setProperty("/editable", false);
-			// that.rebindTable(that.oReadOnlyTemplate, true);
-
-			//         that.rebindTable(that.oReadOnlyTemplate, "Navigation");
-		},
-		// onChange: function(oEvent) {
-		// 	var that = this;
-		// 	var enteredText = oEvent.getParameters("value").value;
-		// 	this.recordexists = undefined;
-		// 	// var index=undefined;
-		// 	var sData = this.getView().getModel("MainModel").getData().employee;//get the moedl data
-		// 	var spath = parseInt(oEvent.getSource().getBindingContext("MainModel").getPath().split("/")[2]);//get the index of enter data row
-
-		// 	var index = sData.findIndex(function(item, sindex) {//findIndex is a method used to validate if same value found it returns index position othervise it returns -1
-		// 		return item.Items === enteredText && sindex !== spath;
-		// 	});
-		// 	if (index > -1) {
-		// 		this.recordexists = index;
-		// 		that.getView().getModel("newModel").setProperty("/valueState", "Error");//set value state to error
-		// 		MessageToast.show("entered sales order is alreay exists");
-
-		// 		return;
-		// 	}
-		// 	that.getView().getModel("newModel").setProperty("/valueState", "None");
-
-		// },
-
-		// onDelete: function () {
-		// 	var that = this;
-		// 	var oTable = this.getView().byId("Emp_Table");
-		// 	var oModel = this.getView().getModel("MainModel");
-		// 	// Enable multi-selection mode
-		// 	oTable.setMode("MultiSelect");
-		// 	var aSelectedItems = oTable.getSelectedItems();
-		// 	if (aSelectedItems.length === 0) {
-		// 		MessageToast.show("Please select at least one row to delimit.");
-		// 		return;
-		// 	}
-
-		// 	MessageBox.confirm("Do you really want to delimit the selected row(s)?", {
-		// 		title: "Confirm Delete",
-		// 		onClose: function (oAction) {
-		// 			if (oAction === MessageBox.Action.OK) {
-		// 				var aData = oModel.getProperty("/Employees");
-
-		// 				aSelectedItems.forEach(function (oSelectedItem) {
-		// 					var sPath = oSelectedItem.getBindingContext("MainModel").getPath();
-		// 					var iIndex = parseInt(sPath.split("/")[2]);
-		// 					aData.splice(iIndex, 1);
-		// 				});
-
-		// 				// Update the model with the modified data
-		// 				oModel.setProperty("/Employees", aData);
-
-		// 				// Update the backend with the deletions (assuming OData service)
-		// 				aSelectedItems.forEach(function (oSelectedItem) {
-		// 					var sPath = oSelectedItem.getBindingContext("MainModel").getPath();
-		// 					var sID = oModel.getProperty(sPath + "/ID");
-
-		// 					// Send a DELETE request to your OData service
-		// 					jQuery.ajax({
-		// 						url: "https://your-odata-service-url/Employees(" + sID + ")",
-		// 						type: "DELETE",
-		// 						success: function (data) {
-		// 							console.log("Item deleted successfully:", data);
-		// 						},
-		// 						error: function (error) {
-		// 							console.error("Error deleting item:", error);
-		// 						}
-		// 					});
-		// 				});
-
-		// 				// Refresh the table to reflect the updated data
-		// 				that.rebindTable(that.oReadOnlyTemplate, "Navigation");
-		// 				oTable.setMode(aData.length > 0 ? "MultiSelect" : "None");
-		// 				MessageToast.show("Selected item(s) deleted successfully.");
-		// 			}
-		// 			// No action needed for Cancel
-		// 		}
-		// 	});
-
-		// },
-		// 
 		onExcelPress: function () {
 			var aCols, oRowBinding, oSettings, oSheet, oTable;
 
@@ -319,7 +214,7 @@ sap.ui.define([
 		},
 
 		_onProductMatched: function (oEvent) {
-				var oModel = this.getOwnerComponent().getModel("MainModel");
+			var oModel = this.getOwnerComponent().getModel("MainModel");
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/employee`,
 				type: "GET",
@@ -328,6 +223,9 @@ sap.ui.define([
 					if (data.success) {
 						var oData = oModel.getData();
 						oData.Employees = data.data;
+						//newEmpC for Employee count
+						var empCount = data.data.length;
+						oData.EmpC = empCount;
 						oModel.setData(oData);
 						oModel.refresh(true);
 						console.log("Data fetched successfully:", data.data);
@@ -340,8 +238,7 @@ sap.ui.define([
 					console.error("Ajax error:", error);
 				}
 			});
-			
-			
+
 		},
 
 		onEditToggleButtonPress: function () {
@@ -355,6 +252,7 @@ sap.ui.define([
 			this.oRouter.getRoute("master").detachPatternMatched(this._onProductMatched, this);
 			this.oRouter.getRoute("detail").detachPatternMatched(this._onProductMatched, this);
 		},
+
 		onAdd: function () {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
 			var oTable = this.getView().byId("Emp_Table");
@@ -367,7 +265,7 @@ sap.ui.define([
 			var aData = oModel.getProperty("/Employees");
 			var oEntry = {
 				"ID": "",
-				"name":"",
+				"name": "",
 				"address": "",
 				"phoneNo": 0
 			};
@@ -401,22 +299,38 @@ sap.ui.define([
 						oModel.setProperty("/bEditMode", false);
 						MessageToast.show("Edit canceled");
 					}
-					
+
 				}
 			});
 		},
+
+		// onNavPress1: function () {
+		// 	var oHistory = History.getInstance();
+		// 	var sPreviousHash = oHistory.getPreviousHash();
+
+		// 	if (sPreviousHash !== undefined) {
+		// 		window.history.go(-1);
+		// 	} else {
+		// 		var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+		// 		oRouter.navTo("Routemaster", true);
+		// 	}
+		// }
 		
 			onNavPress1: function () {
 			var oHistory = History.getInstance();
 			var sPreviousHash = oHistory.getPreviousHash();
+			console.log("Previous hash:", sPreviousHash);
 
-			if (sPreviousHash !== undefined) {
+			// Retrieve previous hash from local storage
+			var storedPreviousHash = localStorage.getItem("previousHash");
+
+			if (storedPreviousHash !== undefined && storedPreviousHash !== null && storedPreviousHash !== "") {
 				window.history.go(-1);
 			} else {
 				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 				oRouter.navTo("Routemaster", true);
 			}
-		}
+		},
 
 	});
 });
