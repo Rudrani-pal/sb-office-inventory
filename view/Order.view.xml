@@ -35,11 +35,10 @@
 					items="{MainModel>/orderTable}">
 					<headerToolbar>
 						<Toolbar>
-							<Title text="Orders"/>
+							<Title text="Total Order ({MainModel>/Order_Id})"/>
 							<ToolbarSpacer/>
-							<!--<Button press="onOrderDialogPress" icon="sap-icon://add-product" visible="true" tooltip="Add Order"/>-->
-							<Button icon="sap-icon://write-new" press="onEdit" visible="{= !${MainModel>/bEditMode}}" tooltip="Edit"/>
-							<Button press="onExcelPress" icon="sap-icon://excel-attachment"/>
+							<Button press="onOrderDialogPress" icon="sap-icon://add-product" visible="true" tooltip="Add Order"/>
+							<Button press="onExcelPress" icon="sap-icon://excel-attachment" blocked="true"/>
 						</Toolbar>
 					</headerToolbar>
 					<columns>
@@ -49,9 +48,6 @@
 						<Column minScreenWidth="Tablet" demandPopin="true">
 							<Text text="Name"/>
 						</Column>
-						<!--<Column minScreenWidth="Tablet" demandPopin="true">-->
-						<!--    <Text text="Items" />-->
-						<!--</Column>-->
 						<Column minScreenWidth="Tablet" demandPopin="true">
 							<Text text="Amount (₹)"/>
 						</Column>
@@ -65,7 +61,7 @@
 							<Text text="Payment Status"/>
 						</Column>
 						<Column minScreenWidth="Tablet" demandPopin="true">
-							<Text text="Button"/>
+							<Text text=""/>
 						</Column>
 					</columns>
 					<items>
@@ -79,8 +75,6 @@
 								icon="{= ${MainModel>Credit} > 0 ? 'sap-icon://alert' : 'sap-icon://sys-enter-2' }"
 								state="{= ${MainModel>Credit} > 0 ? 'Warning' : 'Success' }"/>
 							<Button icon="sap-icon://display" visible="true"/>
-							<!--<Button icon="sap-icon://display" text="{MainModel>Order_ID}" type="Reject" press="onDisplayPress" visible="true" />-->
-							<!--<Text text="{path:'cost',formatter: '.formatcost'}" />-->
 						</ColumnListItem>
 					</items>
 				</Table>
