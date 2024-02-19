@@ -26,13 +26,6 @@ sap.ui.define([
 			this.oModel = oOwnerComponent.getModel();
 			this.oRouter.getRoute("master").attachPatternMatched(this._onProductMatched, this);
 			this.oRouter.getRoute("EmployeeTile").attachPatternMatched(this._onProductMatched, this);
-
-			// this.oView = this.getView();
-			// this._bDescendingSort = false;
-			// this.oProductsTable = this.oView.byId("productsTable");
-			// this.oRouter = this.getOwnerComponent().getRouter();
-			// this.oRouter.getRoute("EmployeeTile").attachPatternMatched(this._onProductMatched, this);
-
 		},
 
 		onAfterRendering: function () {
@@ -40,9 +33,6 @@ sap.ui.define([
 			//this.oReadOnlyTemplate = this.byId("Inventory_Table").getItems[0];
 			this.oReadOnlyTemplate = new ColumnListItem({
 				cells: [
-					// new Text({
-					// 	text: "{MainModel>Order_ID}"
-					// }),
 					new Text({
 						text: "{MainModel>EmpName}"
 					}),
@@ -64,9 +54,6 @@ sap.ui.define([
 			this.rebindTable(this.oReadOnlyTemplate, "Navigation");
 			this.oEditableTemplate = new ColumnListItem({
 				cells: [
-					// new Input({
-					// 	value: "{MainModel>Order_ID}"
-					// }),
 					new Input({
 						value: "{MainModel>EmpName}"
 					}),
@@ -76,122 +63,7 @@ sap.ui.define([
 					new Text({
 						text: "{= ${MainModel>/bDueCleared} ? 'true' : 'false'}"
 					})
-					// new CheckBox({
-					// 	text: "",
-					// 	valueState: "{= ${MainModel>DELIMITED} ? 'Error' : 'Information' }",
-					// 	selected: "{MainModel>DELIMITED}"
-					// })
 				]
-			});
-		},
-
-		// 	onDisplayPress: function (oEvent) {
-		// 	// this.oModel = oOwnerComponent().getModel();
-		// 	var oButton = oEvent.getSource();
-		// 	var oView = this.getView();
-		// 	var oModel = this.getOwnerComponent().getModel("MainModel");
-		// 	var oContext = oEvent.getSource().getBindingContext("MainModel");
-		// 	var oOrderId = oButton.getParent().getBindingContext("MainModel").getObject("Order_ID");
-		// 	jQuery.ajax({
-		// 		url: `https://demo-rudrani.glitch.me/OrderItems/${oOrderId}`,
-		// 		type: "GET",
-		// 		dataType: "json",
-		// 		success: function (data) {
-		// 			if (data.success) {
-		// 				var oData = oModel.getData();
-		// 				oData.OrderItems = data.data;
-		// 				oModel.setData(oData);
-		// 				console.log("Data fetched successfully:", data.data);
-		// 				// Process the fetched data as needed
-		// 			} else {
-		// 				console.error("Error:", data.error);
-		// 			}
-		// 		},
-		// 		error: function (error) {
-		// 			console.error("Ajax error:", error);
-		// 		}
-		// 	});
-		// 	if (!this._pPopover) {
-		// 		this._pPopover = Fragment.load({
-		// 			id: oView.getId(),
-		// 			name: "sbin.oi.view.fragments.Display",
-		// 			controller: this
-		// 		}).then(function (oPopover) {
-		// 			oView.addDependent(oPopover);
-		// 			oPopover.setModel(this.getView().getModel("MainModel"));
-		// 			return oPopover;
-		// 		}.bind(this));
-
-		// 	}
-		// 	this._pPopover.then(function (oPopover) {
-		// 		oPopover.setBindingContext(oContext, "MainModel");
-		// 		oPopover.openBy(oButton);
-		// 	});
-
-		// },
-
-		onDisplayPressxx: function (oEvent) {
-
-			var oButton = oEvent.getSource();
-			var oModel = this.getOwnerComponent().getModel("MainModel");
-			var oContext = oButton.getBindingContext("MainModel");
-			var oEmpId1 = oButton.getParent().getBindingContext("MainModel").getObject("EmpId");
-
-			var oData = oContext.getObject();
-			var oEmpID = oData.EmpId;
-			// var oData = JSON.stringify(EmpId);
-			var sDueAmount = oData.Amount;
-			var sEmployee = oData.EmpName;
-
-			var oButton = oEvent.getSource();
-			var oContext2 = oButton.getBindingContext("MainModel");
-
-			var that = this;
-
-			MessageBox.confirm("Has the due amount of ₹" + sDueAmount + " been cleared by " + sEmployee + "?", {
-				title: "Confirmation",
-				onClose: function (oAction) {
-					if (oAction === MessageBox.Action.OK) {
-						var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-						var that = this;
-						// Perform backend login request using AJAX
-						$.ajax({
-							url: "https://demo-rudrani.glitch.me/duesTable",
-							type: "POST",
-							contentType: "application/json",
-							data: JSON.stringify(oEmpId1),
-							success: function () {
-								console.log("sent successfully");
-								sap.m.MessageToast.show("send Successfully!");
-								// that._onProductMatched();
-
-							},
-							error: function (oError) {
-								console.error("Create failed", oError);
-							}
-						});
-
-						// jQuery.ajax({
-						//     url: `https://demo-rudrani.glitch.me/OrderItems/${oOrderId}`,
-						//     type: "GET",
-						//     dataType: "json",
-						//     success: function (data) {
-						//         if (data.success) {
-						//             var oData = oModel.getData();
-						//             oData.OrderItems = data.data;
-						//             oModel.setData(oData);
-						//             console.log("Data fetched successfully:", data.data);
-						//             // Process the fetched data as needed
-						//         } else {
-						//             console.error("Error:", data.error);
-						//         }
-						//     },
-						//     error: function (error) {
-						//         console.error("Ajax error:", error);
-						//     }
-						// });
-					}
-				}
 			});
 		},
 
@@ -259,6 +131,7 @@ sap.ui.define([
 					console.log("Update successful");
 					sap.m.MessageToast.show("Update Successful!");
 					that.getOwnerComponent().getModel("MainModel").setProperty("/bEditMode", false);
+					that._onProductMatched();
 					that.rebindTable(that.oReadOnlyTemplate, "Navigation");
 				},
 				error: function (oError) {
@@ -381,10 +254,10 @@ sap.ui.define([
 					if (data.success) {
 						var oData = oModel.getData();
 						oData.Employees = data.data;
-            
-            // Calculate EmpC and set it in the model data
-            var empCount = data.data.length;
-            oData.EmpC = empCount;
+
+						// Calculate EmpC and set it in the model data
+						var empCount = data.data.length;
+						oData.EmpC = empCount;
 						oModel.setData(oData);
 						// oModel.refresh(true);
 						console.log("Data fetched successfully:", data.data);
@@ -398,7 +271,6 @@ sap.ui.define([
 				}
 			});
 		},
-		
 
 		onAdd: function () {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
@@ -449,26 +321,7 @@ sap.ui.define([
 				}
 			});
 		},
-		// 		jQuery.ajax({
-		// 		url: `https://demo-rudrani.glitch.me/duesTable`,
-		// 		type: "GET",
-		// 		dataType: "json",
-		// 		success: function (data) {
-		// 			if (data.success) {
-		// 				var oData = oModel.getData();
-		// 				oData.EmpDueSet = data.data;
-		// 				oModel.setData(oData);
-		// 				console.log("Data fetched successfully:", data.data);
-		// 				// Process the fetched data as needed
-		// 			} else {
-		// 				console.error("Error:", data.error);
-		// 			}
-		// 		},
-		// 		error: function (error) {
-		// 			console.error("Ajax error:", error);
-		// 		}
-		// 	});
-		// },
+
 		onSearch: function (oEvent) {
 			var oTableSearchState = [],
 				sQuery = oEvent.getParameter("query");
@@ -480,26 +333,20 @@ sap.ui.define([
 			this.oProductsTable.getBinding("items").filter(oTableSearchState, "Application");
 		},
 
-		// onAdd: function () {
-		// 	MessageBox.information("This functionality is not ready yet.", {
-		// 		title: "Aw, Snap!"
-		// 	});
-		// },
-
 		onFilterItems: function (oEvent) {
-			// 	if (oEvent) {
-			// 	var aSelectedItems = oEvent.getSource().getSelectedItems();
-			// } else {
-			// 	aSelectedItems = this.getView().byId("FilterMCB").getSelectedItems();
-			// }
+				if (oEvent) {
+				var aSelectedItems = oEvent.getSource().getSelectedItems();
+			} else {
+				aSelectedItems = this.getView().byId("FilterMCB").getSelectedItems();
+			}
 			var aFilters = [];
-			//if (aSelectedItems && aSelectedItems.length > 0) {
+			if (aSelectedItems && aSelectedItems.length > 0) {
 			for (var i = 0; i < aSelectedItems.length; i++) {
 				if (aSelectedItems[i].getBindingContext("MainModel") && aSelectedItems[i].getBindingContext("MainModel").getObject()) {
-					aFilters.push(new Filter("EmpName", FilterOperator.EQ, aSelectedItems[i].getBindingContext("MainModel").getObject().EmpName));
+					aFilters.push(new Filter("EmpId", FilterOperator.EQ, aSelectedItems[i].getBindingContext("MainModel").getObject().EmpId));
 				}
 			}
-			// }
+			 }
 			// aFilters.push(new Filter("DELIMITED", FilterOperator.EQ, this.getOwnerComponent().getModel("MainModel").getProperty(
 			// 	"/bShowInventoryDelimited")));
 			this.getView().byId("Emp_Due_Table").getBinding("items").filter(aFilters);
@@ -507,13 +354,6 @@ sap.ui.define([
 
 		createColumnConfig: function () {
 			var aCols = [];
-
-			aCols.push({
-				label: 'Id',
-				property: 'DuesId',
-				type: EdmType.Number,
-				template: '{0}, {1}'
-			});
 
 			aCols.push({
 				label: 'Employee Name',
@@ -565,16 +405,21 @@ sap.ui.define([
 			oBinding.sort(oSorter);
 		},
 
+
 		onNavPress1: function () {
 			var oHistory = History.getInstance();
 			var sPreviousHash = oHistory.getPreviousHash();
+			console.log("Previous hash:", sPreviousHash);
 
-			if (sPreviousHash !== undefined) {
+			// Retrieve previous hash from local storage
+			var storedPreviousHash = localStorage.getItem("previousHash");
+
+			if (storedPreviousHash !== undefined && storedPreviousHash !== null && storedPreviousHash !== "") {
 				window.history.go(-1);
 			} else {
 				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 				oRouter.navTo("Routemaster", true);
 			}
-		}
+		},
 	});
 });
