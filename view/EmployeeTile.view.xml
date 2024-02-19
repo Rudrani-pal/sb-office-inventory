@@ -20,7 +20,8 @@
 							<fb:FilterGroupItem groupName="A" name="Name" label="Employee Name" visibleInFilterBar="true">
 								<fb:control>
 									<MultiComboBox items="{MainModel>/EmpDueSet}" name="Name" id="FilterMCB" selectionChange="onFilterItems" placeholder="Select Name">
-										<core:Item key="{MainModel>DuesId}" text="{MainModel>EmpName}"/>
+										<core:ListItem key="{MainModel>EmpId}" text="{MainModel>EmpName}" additionalText = "{MainModel>EmpCode}"/>
+										<!--<core:Item key="{MainModel>DuesId}" text="{MainModel>EmpName}"/>-->
 									</MultiComboBox>
 								</fb:control>
 							</fb:FilterGroupItem>
@@ -46,9 +47,6 @@
 						</Toolbar>
 					</headerToolbar>
 					<columns>
-						<!--<Column minScreenWidth="" demandPopin="false">-->
-						<!--    <Text text="Order ID" />-->
-						<!--</Column>-->
 						<Column minScreenWidth="Tablet" demandPopin="true">
 							<Text text="Employee Name"/>
 						</Column>
@@ -59,18 +57,15 @@
 							<Text text="Clear Due"/>
 						</Column>
 						<Column minScreenWidth="Tablet" demandPopin="true" visible="{= ${MainModel>/bDueCleared}}">
-							<!--{= !!${MainModel>/bDueCleared}}-->
 							<Text text="Due Cleared"/>
 						</Column>
 					</columns>
 					<items>
 						<ColumnListItem>
-							<!--<Text text="{MainModel>Order_ID}" />-->
 							<Text text="{MainModel>EmpName}"/>
 							<Text text="{MainModel>Amount}"/>
 							<Button icon="sap-icon://display" visible="true"/>
 							<Text text="{MainModel>/Cleared}"/>
-							<!--<Text text="{path:'cost',formatter: '.formatcost'}" />-->
 						</ColumnListItem>
 					</items>
 				</Table>
