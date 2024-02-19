@@ -19,7 +19,6 @@ sap.ui.define([
 	"use strict";
 	var ButtonType = mobileLibrary.ButtonType;
 	var ValueState = coreLibrary.ValueState;
-	// shortcut for sap.m.DialogType
 	var DialogType = mobileLibrary.DialogType;
 	return Controller.extend("sbin.oi.controller.Master", {
 		onInit: function () {
@@ -44,13 +43,14 @@ sap.ui.define([
 
 		},
 		onNoSalePress: function (oEvent) {
-			// MessageBox.show("Pressed item with ID " + oEvent.getSource().getId());
 			this.oRouter.navTo("InvNoSale", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
 			});
 		},
-
+		onFunActivityTilePress: function () {
+			sap.m.MessageToast.show("Coming Soon!!");
+		},
 		onOrderDialogPress: function (oEvent) {
 			var oGlobalModel = this.getOwnerComponent().getModel("MainModel");
 			var oContext = oEvent.getSource().getBindingContext("MainModel");
@@ -197,8 +197,6 @@ sap.ui.define([
 					console.error("Ajax error:", error);
 				}
 			});
-			// var oModel = this.getView().getModel("MainModel");
-			// var username = oModel.getProperty("/EmpCount");
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/employee`,
 				type: "GET",
@@ -209,12 +207,60 @@ sap.ui.define([
 						var oData = oModel.getData();
 						oData.Employees = data.data;
 						oData.Employees = data.data;
-            
-            // Calculate EmpC and set it in the model data
-            var empCount = data.data.length;
-            oData.EmpC = empCount;
+
+						// Calculate EmpC and set it in the model data
+						var empCount = data.data.length;
+						oData.EmpC = empCount;
 						oModel.setData(oData);
 						// oModel.refresh(true);
+						console.log("Data fetched successfully:", data.data);
+						// Process the fetched data as needed
+					} else {
+						console.error("Error:", data.error);
+					}
+				},
+				error: function (error) {
+					console.error("Ajax error:", error);
+				}
+			});
+			jQuery.ajax({
+				url: `https://demo-rudrani.glitch.me/orderTable`,
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					if (data.success) {
+						var oData = oModel.getData();
+						oData.orderTable = data.data;
+						oModel.setData(oData);
+						var oOrderId = data.data.length;
+						oData.Order_Id = oOrderId;
+						oModel.refresh(true);
+						console.log("Data fetched successfully:", data.data);
+						// Process the fetched data as needed
+					} else {
+						console.error("Error:", data.error);
+					}
+				},
+				error: function (error) {
+					console.error("Ajax error:", error);
+				}
+			});
+			var oDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+			var sDate = oDate.toISOString().split('T')[0];
+			jQuery.ajax({
+				url: `https://demo-rudrani.glitch.me/UnorderedItems/${sDate}`,
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					if (data.success) {
+						var oData = oModel.getData();
+						var iValue = 0;
+						for (var i = 0; i < data.data.length; i++) {
+							iValue = iValue + (parseInt(data.data[i].Price) * parseInt(data.data[i].Qty));
+						}
+						oData.UnorderedItemsValue = iValue;
+						oData.UnorderedItems = data.data;
+						oModel.setData(oData);
 						console.log("Data fetched successfully:", data.data);
 						// Process the fetched data as needed
 					} else {
