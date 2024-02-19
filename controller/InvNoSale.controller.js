@@ -17,20 +17,9 @@ var EdmType = exportLibrary.EdmType;
 
 			this.oRouter = oOwnerComponent.getRouter();
 			this.oModel = oOwnerComponent.getModel();
-
-			// this.oRouter.getRoute("master").attachPatternMatched(this._onProductMatched, this);
 			this.oRouter.getRoute("EmployeeTile").attachPatternMatched(this._onProductMatched, this);
-			
-			
-			// this.oView = this.getView();
-			// this._bDescendingSort = false;
-			// this.oProductsTable = this.oView.byId("productsTable");
-			// this.oRouter = this.getOwnerComponent().getRouter();
-			// this.oRouter.getRoute("EmployeeTile").attachPatternMatched(this._onProductMatched, this);
-
 		},
 		_onProductMatched: function (oEvent) {
-			// this._user = oEvent.getParameter("arguments").user;
 			var oModel = this.getOwnerComponent().getModel("MainModel");
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/userTable/${this._user}`,
