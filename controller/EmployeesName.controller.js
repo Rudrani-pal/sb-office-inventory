@@ -317,19 +317,16 @@ sap.ui.define([
 		// }
 		
 			onNavPress1: function () {
-			var oHistory = History.getInstance();
-			var sPreviousHash = oHistory.getPreviousHash();
-			console.log("Previous hash:", sPreviousHash);
+				var oHistory = History.getInstance();
+                var sPreviousHash = oHistory.getPreviousHash();
 
-			// Retrieve previous hash from local storage
-			var storedPreviousHash = localStorage.getItem("previousHash");
-
-			if (storedPreviousHash !== undefined && storedPreviousHash !== null && storedPreviousHash !== "") {
-				window.history.go(-1);
-			} else {
-				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-				oRouter.navTo("Routemaster", true);
-			}
+                if (sPreviousHash !== undefined) {
+                    window.history.go(-1);
+                }
+                else {
+                    var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                    oRouter.navTo("Routemaster", true);
+                }
 		},
 
 	});
