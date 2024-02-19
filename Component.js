@@ -24,6 +24,7 @@ sap.ui.define([
 				username: "",
 				password: "",
 				bEditMode: false,
+				enableInventorySave: true,
 				bShowInventoryDelimited: false,
                 bDueCleared: false,
                 bShowDelimitedClearedDue: false,
