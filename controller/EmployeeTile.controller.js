@@ -220,6 +220,7 @@ sap.ui.define([
 		_onProductMatched: function (oEvent) {
 			//new code
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+                        oModel.setProperty("/busy", false);
 			if (oModel.getProperty("/bShowClearedDues")) {
 				var iCleared = 1;
 			} else {
@@ -407,15 +408,22 @@ sap.ui.define([
 
 
 		onNavPress1: function () {
-				var oHistory = History.getInstance();
+			var oModel = this.getOwnerComponent().getModel("MainModel");
+				oModel.setProperty("/busy", true);
+		var oHistory = History.getInstance();
                 var sPreviousHash = oHistory.getPreviousHash();
 
+	            sPreviousHash = undefined;
                 if (sPreviousHash !== undefined) {
                     window.history.go(-1);
                 }
                 else {
                     var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                    oRouter.navTo("Routemaster", true);
+                    //TODO
+                    oRouter.navTo("master", {
+				layout: fioriLibrary.LayoutType.MidColumnFullScreen,
+				user: oModel.getProperty("/LoginUserId") ? oModel.getProperty("/LoginUserId") : "t.bera"
+			});
                 }
 		},
 	});
