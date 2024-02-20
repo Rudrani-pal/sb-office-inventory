@@ -21,6 +21,7 @@ sap.ui.define([
 			var oModel = new JSONModel();
 			this.setModel(oModel);
 				var oModel2 = new JSONModel({
+                                busy: false,
 				username: "",
 				password: "",
 				bEditMode: false,
