@@ -21,6 +21,7 @@ var EdmType = exportLibrary.EdmType;
 		},
 		_onProductMatched: function (oEvent) {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+                        oModel.setProperty("/busy", false);
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/userTable/${this._user}`,
 				type: "GET",
@@ -150,15 +151,20 @@ var EdmType = exportLibrary.EdmType;
 		},
 		
 			onNavPress1: function () {
-			var oHistory = History.getInstance();
-			var sPreviousHash = oHistory.getPreviousHash();
-
-			if (sPreviousHash !== undefined) {
-				window.history.go(-1);
-			} else {
-				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-				oRouter.navTo("Routemaster", true);
-			}
-		}
+				var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
+				var oHistory = History.getInstance();
+                var sPreviousHash = oHistory.getPreviousHash();
+				sPreviousHash = undefined;
+                if (sPreviousHash !== undefined) {
+                    window.history.go(-1);
+                }
+                else {
+                    var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                    	oRouter.navTo("master", {
+				layout: fioriLibrary.LayoutType.MidColumnFullScreen,
+				user: oModel.getProperty("/LoginUserId") ? oModel.getProperty("/LoginUserId") : "t.bera"
+			});
+                }
 	});
 });
