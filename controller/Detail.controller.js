@@ -11,9 +11,10 @@ sap.ui.define([
 	'sap/m/CheckBox',
 	'sap/m/Text',
 	'sap/base/util/deepExtend',
-	"sap/m/MessageBox"
+	"sap/m/MessageBox",
+        "sap/f/library"
 ], function (Controller, History, Filter, FilterOperator, exportLibrary, Spreadsheet, MessageToast, ColumnListItem, Input, CheckBox, Text,
-	deepExtend, MessageBox) {
+	deepExtend, MessageBox, fioriLibrary) {
 	"use strict";
 	var EdmType = exportLibrary.EdmType;
 	return Controller.extend("sbin.oi.controller.Detail", {
@@ -348,6 +349,7 @@ sap.ui.define([
 			// 	model: "products"
 			// });
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+                        oModel.setProperty("/busy", false);
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/inventory`,
 				type: "GET",
@@ -499,7 +501,9 @@ sap.ui.define([
 		// },
 
 		onNavPress1: function () {
-				var oHistory = History.getInstance();
+		var oModel = this.getOwnerComponent().getModel("MainModel");
+		oModel.setProperty("/busy", true);
+		var oHistory = History.getInstance();
                 var sPreviousHash = oHistory.getPreviousHash();
 
                 if (sPreviousHash !== undefined) {
@@ -507,7 +511,10 @@ sap.ui.define([
                 }
                 else {
                     var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                    oRouter.navTo("Routemaster", true);
+                   	oRouter.navTo("master", {
+				layout: fioriLibrary.LayoutType.MidColumnFullScreen,
+				user: oModel.getProperty("/LoginUserId") ? oModel.getProperty("/LoginUserId") : "t.bera"
+			});
                 }
 		},
 
