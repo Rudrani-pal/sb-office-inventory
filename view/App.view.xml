@@ -4,7 +4,7 @@
 	height="100%"
 	xmlns="sap.f"
 	xmlns:mvc="sap.ui.core.mvc">
-	<FlexibleColumnLayout
+	<FlexibleColumnLayout busy="{MainModel>/busy}"
 		id="flexibleColumnLayout"
 		stateChange=".onStateChanged"
 		backgroundDesign="Solid"
