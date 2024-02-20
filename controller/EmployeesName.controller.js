@@ -11,9 +11,10 @@ sap.ui.define([
 	'sap/m/CheckBox',
 	'sap/m/Text',
 	'sap/base/util/deepExtend',
-	"sap/m/MessageBox"
+	"sap/m/MessageBox",
+        "sap/f/library"
 ], function (Controller, History, Filter, FilterOperator, exportLibrary, Spreadsheet, MessageToast, ColumnListItem, Input, CheckBox, Text,
-	deepExtend, MessageBox) {
+	deepExtend, MessageBox, fioriLibrary) {
 	"use strict";
 	var EdmType = exportLibrary.EdmType;
 	return Controller.extend("sbin.oi.controller.EmployeesName", {
@@ -215,6 +216,7 @@ sap.ui.define([
 
 		_onProductMatched: function (oEvent) {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+                        oModel.setProperty("/busy", false);
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/employee`,
 				type: "GET",
@@ -304,29 +306,24 @@ sap.ui.define([
 			});
 		},
 
-		// onNavPress1: function () {
-		// 	var oHistory = History.getInstance();
-		// 	var sPreviousHash = oHistory.getPreviousHash();
-
-		// 	if (sPreviousHash !== undefined) {
-		// 		window.history.go(-1);
-		// 	} else {
-		// 		var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-		// 		oRouter.navTo("Routemaster", true);
-		// 	}
-		// }
 		
 			onNavPress1: function () {
-				var oHistory = History.getInstance();
-                var sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                }
-                else {
-                    var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                    oRouter.navTo("Routemaster", true);
-                }
+				var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
+			var oHistory = History.getInstance();
+			var sPreviousHash = oHistory.getPreviousHash();
+			//TODO
+			sPreviousHash = undefined;
+			if (sPreviousHash !== undefined) {
+				window.history.go(-1);
+			} else {
+				var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+				//oRouter.navTo("Routemaster", true);
+				oRouter.navTo("master", {
+				layout: fioriLibrary.LayoutType.MidColumnFullScreen,
+				user: oModel.getProperty("/LoginUserId") ? oModel.getProperty("/LoginUserId") : "t.bera"
+			});
+			}
 		},
 
 	});
