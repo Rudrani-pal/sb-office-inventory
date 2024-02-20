@@ -43,6 +43,8 @@ sap.ui.define([
 
 		},
 		onNoSalePress: function (oEvent) {
+                var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 			this.oRouter.navTo("InvNoSale", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
@@ -83,6 +85,8 @@ sap.ui.define([
 		},
 
 		_onProductMatched: function (oEvent) {
+                        var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", false);
 			if (!this._user && oEvent) {
 				this._user = oEvent.getParameter("arguments").user;
 			}
@@ -345,6 +349,8 @@ sap.ui.define([
 		},
 
 		onEmpPress: function (oEvent) {
+                    var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 			this.oRouter.navTo("EmployeeTile", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
@@ -352,6 +358,8 @@ sap.ui.define([
 		},
 
 		onOrderTilePress: function (oEvent) {
+                    var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 			this.oRouter.navTo("Order", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
@@ -359,6 +367,8 @@ sap.ui.define([
 		},
 
 		onEmpTilePress: function (oEvent) {
+               var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 			this.oRouter.navTo("EmployeesName", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
@@ -368,7 +378,8 @@ sap.ui.define([
 		onListItemPress: function (oEvent) {
 			// var productPath = oEvent.getSource().getBindingContext("products").getPath(),
 			// 	product = productPath.split("/").slice(-1).pop();
-
+                        var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 			this.oRouter.navTo("detail", {
 				layout: fioriLibrary.LayoutType.EndColumnFullScreen,
 				user: this._user
