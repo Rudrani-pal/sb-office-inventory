@@ -101,7 +101,7 @@ sap.ui.define([
 					}),
 					new CheckBox({
 						text: "{= ${MainModel>Credit} > 0 ? 'On Credit' : 'Payment Done' }",
-						icon: "{= ${MainModel>Credit} > 0 ? 'sap-icon://alert' : 'sap-icon://sys-enter-2' }",
+						// icon: "{= ${MainModel>Credit} > 0 ? 'sap-icon://alert' : 'sap-icon://sys-enter-2' }",
 						state: "{= ${MainModel>Credit} > 0 ? 'Warning' : 'Success' }"
 					})
 				]
@@ -206,6 +206,7 @@ sap.ui.define([
 
 		_onProductMatched: function (oEvent) {
 			var oModel = this.getOwnerComponent().getModel("MainModel");
+                        oModel.setProperty("/busy", false);
 			jQuery.ajax({
 				url: `https://demo-rudrani.glitch.me/orderTable`,
 				type: "GET",
@@ -477,15 +478,20 @@ sap.ui.define([
 		},
 
 		onNavPress1: function () {
+		var oModel = this.getOwnerComponent().getModel("MainModel");
+			oModel.setProperty("/busy", true);
 				var oHistory = History.getInstance();
                 var sPreviousHash = oHistory.getPreviousHash();
-
+				sPreviousHash = undefined;
                 if (sPreviousHash !== undefined) {
                     window.history.go(-1);
                 }
                 else {
                     var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                    oRouter.navTo("Routemaster", true);
+                    	oRouter.navTo("master", {
+				layout: fioriLibrary.LayoutType.MidColumnFullScreen,
+				user: oModel.getProperty("/LoginUserId") ? oModel.getProperty("/LoginUserId") : "t.bera"
+			});
                 }
 		},
 	});
